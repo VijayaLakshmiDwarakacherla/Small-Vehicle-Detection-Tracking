@@ -28,7 +28,7 @@ The main challenge is that the targets are very small relative to the 1280×720 
 ```text
 2w_videos/
 │
-├── 13105476_720p_10fps_30s.mp4
+├── 13105476_720p_10fps_35s.mp4
 │   └── Input traffic video
 │      1280×720 @ 10 FPS, approximately 35 seconds
 │
@@ -76,7 +76,7 @@ The pipeline was therefore designed around **small-object detection + motion-awa
 The main test video used for this project is:
 
 ```text
-13105476_720p_10fps_30s.mp4
+13105476_720p_10fps_35s.mp4
 ```
 
 Video properties:
@@ -1283,7 +1283,7 @@ custom_tracker.py
 ### Input Video
 
 ```text
-13105476_720p_10fps_30s.mp4
+13105476_720p_10fps_35s.mp4
 ```
 
 ### Annotated Output
