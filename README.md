@@ -28,7 +28,7 @@ The main challenge is that the targets are very small relative to the 1280×720 
 ```text
 2w_videos/
 │
-├── 13105476_720p_10fps.mp4
+├── 13105476_720p_10fps_30s.mp4
 │   └── Input traffic video
 │      1280×720 @ 10 FPS, approximately 35 seconds
 │
@@ -124,7 +124,7 @@ Therefore, VisDrone was useful as an initial training source and baseline, but i
 
 ## 4.2 Custom Traffic Dataset
 
-To address the domain mismatch, I collected my own traffic footage using the same type of camera perspective used for the final test sequence.
+To address the domain mismatch, I collected my own traffic footage.
 
 I manually annotated the relevant two-wheelers using the **VGG Image Annotator (VIA)**.
 
@@ -1304,5 +1304,3 @@ requirements.txt
 README.md
 ```
 > **Note:** This repository contains only the final working implementation used for the submission. Intermediate experiments, unsuccessful model versions, and development iterations are not included. The README documents the major experiments and design decisions that led to the final system.
-
-```
