@@ -2,8 +2,6 @@
 
 ## Detection and Custom Tracking for Small Two-Wheelers
 
-This project implements an end-to-end pipeline for detecting and tracking small moving vehicles, primarily motorcycles, scooters, in low-frame-rate traffic video.
-
 The system is designed specifically for:
 
 - **Object Detection:** YOLOv8m (Ultralytics), fine-tuned for small two-wheeler detection
