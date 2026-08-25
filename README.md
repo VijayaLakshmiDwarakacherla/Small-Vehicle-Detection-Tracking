@@ -1,6 +1,6 @@
 # Small Vehicle Detection & Tracking
 
-## End-to-End Detection and Custom Tracking Pipeline for Small Two-Wheelers
+## Detection and Custom Tracking for Small Two-Wheelers
 
 This project implements an end-to-end pipeline for detecting and tracking small moving vehicles, primarily motorcycles, scooters, in low-frame-rate traffic video.
 
