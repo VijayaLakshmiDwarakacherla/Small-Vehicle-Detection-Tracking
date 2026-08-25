@@ -12,66 +12,12 @@ The system is designed specifically for:
 - **Tracking:** Custom Adaptive Motion & Geometry (AMT) tracker
 - **Motion Model:** Linear position/velocity prediction with velocity dampening
 - **Data Association:** Custom geometry-aware cost matrix + Hungarian assignment
-- **Annotation:** VGG Image Annotator (VIA)
-- **Frameworks:** PyTorch, Ultralytics YOLO, OpenCV
-- **Numerical/Tracking Libraries:** NumPy, SciPy
-- **Input:** 1280×720 video at 10 FPS
-- **Output:** Annotated video with stable track IDs for moving two-wheelers
-- **Hardware:** Single consumer CPU or NVIDIA consumer GPU
 
 The main challenge is that the targets are very small relative to the 1280×720 frame and can move a significant distance between consecutive frames because the input video is only 10 FPS.
 
 ---
 
-## 1. Repository Structure
-
-```text
-2w_videos/
-│
-├── 13105476_720p_10fps_35s.mp4
-│   └── Input traffic video
-│      1280×720 @ 10 FPS, approximately 35 seconds
-│
-├── final_result.mp4
-│   └── Annotated output video with bounding boxes and track IDs
-│
-├── run_pipeline.py
-│   └── Main pipeline entry point
-│
-├── detector_2w.py
-│   └── YOLOv8m detector and high-zoom far-horizon tiling
-│
-├── custom_tracker.py
-│   └── Custom AMT tracking implementation
-│
-├── requirements.txt
-│   └── Python dependencies
-│
-└── README.md
-    └── Project documentation
-````
-
----
-
-# 2. Problem Definition
-
-The objective of this assignment is to detect and track **only moving small vehicles** in traffic footage.
-
-The provided challenge has several characteristics that make conventional object tracking difficult:
-
-1. Two-wheelers can occupy only a few pixels in the image.
-2. At 10 FPS, a vehicle can move several times its own bounding-box width between frames.
-3. Detector predictions can disappear for several consecutive frames.
-4. Vehicles can enter and leave the scene.
-5. Vehicles can be temporarily occluded by larger vehicles.
-6. Stationary motorcycles must not generate persistent track IDs.
-7. Camera motion and compression artifacts can create additional false motion.
-
-The pipeline was therefore designed around **small-object detection + motion-aware temporal association + moving-object validation** rather than using a generic tracker.
-
----
-
-# 3. Input Video
+# 1. Input Video
 
 The main test video used for this project is:
 
@@ -103,9 +49,9 @@ The data therefore provides the required non-trivial tracking conditions rather 
 
 ---
 
-# 4. Dataset Development
+# 2. Dataset Development
 
-## 4.1 Initial Experiment with VisDrone MOT
+## 2.1 Initial Experiment with VisDrone MOT
 
 My first approach was to use the public **VisDrone MOT dataset** for detector training.
 
@@ -122,7 +68,7 @@ Therefore, VisDrone was useful as an initial training source and baseline, but i
 
 ---
 
-## 4.2 Custom Traffic Dataset
+## 2.2 Custom Traffic Dataset
 
 To address the domain mismatch, I collected my own traffic footage.
 
@@ -141,7 +87,7 @@ The goal was to train/evaluate the detector on examples that actually resemble t
 
 ---
 
-## 4.3 Limitations of the Custom Dataset
+## 2.3 Limitations of the Custom Dataset
 
 Because the dataset was collected using a real camera rather than a controlled recording setup, it contains several disadvantages:
 
@@ -157,19 +103,11 @@ Fast motorcycles and scooters can become blurred, especially at the low frame ra
 
 Distant motorcycles can visually blend into the road surface and surrounding background.
 
-### Compression artifacts
-
-H.264 compression can remove or distort important features when the object occupies only a few pixels.
-
-### Limited training diversity
-
-The custom dataset represents one camera viewpoint and a limited set of traffic/environment conditions. A larger dataset collected under different lighting, weather, camera angles, and traffic densities would improve generalization.
-
 ---
 
-# 5. Detector
+# 3. Detector
 
-## 5.1 Initial YOLOv8s Experiment
+## 3.1 Initial YOLOv8s Experiment
 
 The first detector used was a pretrained **YOLOv8s** model.
 
@@ -185,7 +123,7 @@ Therefore, simply increasing confidence thresholds or using standard full-frame 
 
 ---
 
-# 6. YOLOv8m and Small-Object Strategy
+# 4. YOLOv8m and Small-Object Strategy
 
 I therefore moved to **YOLOv8m** and combined it with a high-zoom tiling strategy.
 
@@ -195,7 +133,7 @@ The trade-off is higher computational cost and slower inference.
 
 ---
 
-## 6.1 Global Detection Pass
+## 4.1 Global Detection Pass
 
 The full 1280×720 frame is processed to detect medium and large vehicles.
 
@@ -203,13 +141,11 @@ This pass is useful for motorcycles that are close enough to occupy a reasonable
 
 ---
 
-## 6.2 High-Zoom Far-Horizon Pass
+## 4.2 High-Zoom Far-Horizon Pass
 
 The most important small-object improvement is the far-horizon tiling strategy.
 
-The upper/far-road region is divided into approximately 256×256 pixel tiles.
-
-Each tile is resized to approximately 1024×1024 before being passed to YOLOv8m.
+The upper/far-road region is divided into pixel tiles, each tile is resized before being passed to YOLOv8m.
 
 Conceptually:
 
@@ -221,11 +157,11 @@ Original Frame
 Far-Horizon Region
       │
       ▼
-256 × 256 Tile
+a x b px Tile
       │
       │ 4× digital enlargement
       ▼
-1024 × 1024 YOLO Input
+4a × 4b px YOLO Input
       │
       ▼
 Small motorcycle becomes significantly larger
@@ -245,7 +181,7 @@ This significantly improves the opportunity to detect distant motorcycles compar
 
 ---
 
-# 7. Detection Post-Processing
+# 5. Detection Post-Processing
 
 The detection stage applies several task-specific filters.
 
@@ -267,7 +203,7 @@ This reduces false positives caused by roadside structures and background object
 
 ---
 
-# 8. Custom AMT Tracker
+# 6. Custom AMT Tracker
 
 The tracker is called:
 
@@ -286,7 +222,7 @@ It does **not** use:
 
 ---
 
-# 9. Tracker Architecture
+# 7. Tracker Architecture
 
 The tracking pipeline is:
 
@@ -322,7 +258,7 @@ Stable track IDs
 
 ---
 
-# 10. Motion Model
+# 8. Motion Model
 
 The tracker maintains a state containing position, object scale/geometry, and velocity.
 
@@ -354,7 +290,7 @@ A simple IoU-only tracker is particularly vulnerable when the target moves 15–
 
 ---
 
-# 11. Velocity Dampening During Detector Dropouts
+# 9. Velocity Dampening During Detector Dropouts
 
 Detector predictions are not guaranteed to be available on every frame.
 
@@ -381,7 +317,7 @@ The purpose is to keep the predicted location sufficiently close to the last kno
 
 ---
 
-# 12. Association Cost
+# 10. Association Cost
 
 Track-to-detection association uses a task-specific cost rather than only bounding-box IoU.
 
@@ -427,7 +363,7 @@ Associations outside the allowed distance gate are rejected before assignment.
 
 ---
 
-# 13. Hungarian Assignment
+# 11. Hungarian Assignment
 
 After computing the track-to-detection cost matrix and applying invalid-pair gating, valid associations are solved using the Hungarian assignment algorithm.
 
@@ -437,7 +373,7 @@ The Hungarian algorithm is used only as an optimization method for the custom as
 
 ---
 
-# 14. Track Lifecycle
+# 12. Track Lifecycle
 
 A major requirement of the task is:
 
@@ -480,7 +416,7 @@ The lifecycle is:
 
 ---
 
-# 15. Track Birth Policy
+# 13. Track Birth Policy
 
 A new detection initially becomes a **Candidate**.
 
@@ -522,7 +458,7 @@ A moving motorcycle, on the other hand, should accumulate measurable displacemen
 
 ---
 
-# 16. Track Death Policy
+# 14. Track Death Policy
 
 Confirmed tracks are allowed to survive temporary detector failures.
 
@@ -551,7 +487,7 @@ This provides a compromise between:
 
 ---
 
-# 17. Frame-by-Frame Debugging
+# 15. Frame-by-Frame Debugging
 
 A significant part of the development process was debugging the tracker frame by frame.
 
@@ -593,7 +529,7 @@ This debugging information was particularly useful for identifying:
 
 ---
 
-# 18. Assumptions and Operational Definitions
+# 16. Assumptions and Operational Definitions
 
 ## Small Vehicle
 
@@ -639,7 +575,7 @@ This prevents parked motorcycles from being reported as moving vehicles.
 
 ---
 
-# 19. Running the Pipeline
+# 17. Running the Pipeline
 
 ## Requirements
 
@@ -662,45 +598,7 @@ No multi-GPU or cluster processing is required.
 
 ---
 
-# 20. Installation
-
-Create a virtual environment:
-
-```bash
-python -m venv venv
-```
-
-### Windows PowerShell
-
-```powershell
-.\venv\Scripts\Activate.ps1
-```
-
-### Linux/macOS
-
-```bash
-source venv/bin/activate
-```
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-The main dependencies include:
-
-```text
-PyTorch
-Ultralytics
-OpenCV
-NumPy
-SciPy
-```
-
----
-
-# 21. Standard Pipeline Run
+# 18. Standard Pipeline Run
 
 From the project directory:
 
@@ -717,7 +615,7 @@ The output video will contain:
 
 ---
 
-# 22. Performance Debugging
+# 19. Performance Debugging
 
 To inspect timing and tracking statistics:
 
@@ -732,7 +630,7 @@ python run_pipeline.py \
 
 ---
 
-# 23. Detector Diagnostic Mode
+# 20. Detector Diagnostic Mode
 
 For detailed detector diagnostics:
 
@@ -755,7 +653,7 @@ This mode is useful for inspecting:
 
 ---
 
-# 24. Throughput Measurement
+# 21. Throughput Measurement
 
 The pipeline was measured on a single consumer-computer setup consisting of:
 
@@ -823,7 +721,7 @@ The reported measurements above are intentionally separated by component so that
 
 ---
 
-# 25. Why the Current Detector Is a Trade-Off
+# 22. Why the Current Detector Is a Trade-Off
 
 YOLOv8m + high-zoom tiling improves small-object detection, but it increases inference cost.
 
@@ -853,7 +751,7 @@ For this assignment, I prioritized recovering very small two-wheelers over maxim
 
 ---
 
-# 26. Current Failure Modes
+# 23. Current Failure Modes
 
 The system does not claim perfect tracking. The main observed failure modes are:
 
@@ -894,18 +792,7 @@ A detector specifically trained for crowded small two-wheelers, combined with so
 
 ---
 
-# 27. Other Current Limitations
-
-Additional limitations include:
-
-* Extremely small objects can contain insufficient visual information even after tiling.
-* Detector confidence is less stable for the smallest objects.
-* Long-term re-identification is currently limited.
-* The current moving-object threshold is hand-tuned for this footage.
-
----
-
-# 28. What I Would Improve With Another Week
+# 24. What I Would Improve With Another Week
 
 If I had another week, I would focus primarily on improving the **small-object detector and camera-motion handling**, rather than replacing the existing tracker with an off-the-shelf tracker.
 
@@ -947,7 +834,7 @@ The goal would be to preserve the high recall of the current tiled detector whil
 
 ---
 
-# 30. Sparse ROI Proposal
+# 25. Sparse ROI Proposal
 
 A first-stage lightweight process could identify regions where a moving vehicle is
 likely to exist using motion, appearance, and temporal consistency.
@@ -979,7 +866,7 @@ The overlapping strategy would reduce boundary-related detection failures.
 
 ---
 
-# 32. Lightweight Backbone
+# 26. Lightweight Backbone
 
 For the dedicated detector, I would investigate:
 
@@ -994,7 +881,7 @@ The goal would be to reduce the computational cost compared with YOLOv8m while p
 
 ---
 
-# 33. Temporal Information for Detection
+# 27. Temporal Information for Detection
 
 Another improvement would be to exploit the fact that this is video rather than independent images.
 
@@ -1024,7 +911,7 @@ A lightweight recurrent or exponential feature memory could improve detection st
 
 ---
 
-# 34. Synthetic Small-Object Augmentation
+# 28. Synthetic Small-Object Augmentation
 
 The custom dataset could also be expanded using realistic degradation.
 
@@ -1053,7 +940,7 @@ This would specifically train the detector for the conditions under which the sm
 
 ---
 
-# 35. Hard-Negative Mining
+# 20. Hard-Negative Mining
 
 I would also collect difficult non-vehicle patches such as:
 
@@ -1072,7 +959,7 @@ These would be used as hard negatives so the detector learns that not every tiny
 
 ---
 
-# 36. Camera Motion Compensation
+# 30. Camera Motion Compensation
 
 Before object-level tracking, I would estimate global camera motion using stable background features.
 
@@ -1100,7 +987,7 @@ It would also make the moving-versus-stationary decision more reliable.
 
 ---
 
-# 37. Improved Re-Identification
+# 31. Improved Re-Identification
 
 For long occlusions, I would add a lightweight appearance representation.
 
@@ -1129,7 +1016,7 @@ For this reason, appearance would be used as a supporting signal rather than the
 
 ---
 
-# 38. Improved Track Lifecycle
+# 32. Improved Track Lifecycle
 
 The current lifecycle uses a fixed 8-frame missed-detection threshold.
 
@@ -1162,57 +1049,7 @@ This would reduce unnecessary track termination while avoiding stale tracks.
 
 ---
 
-# 39. Evaluation Plan
-
-With additional development time, I would create a manually annotated evaluation subset containing:
-
-* Ground-truth bounding boxes
-* Vehicle identities
-* Moving/stationary labels
-* Occlusion intervals
-* Entry/exit events
-* Crossing events
-
-I would then report:
-
-```text
-Detection:
-Precision
-Recall
-Small-object Recall
-False Positives
-
-Tracking:
-IDF1
-HOTA
-MOTA
-ID Switches
-Track Fragmentation
-```
-
-I would additionally break results down by target size:
-
-```text
-<10 px
-10–20 px
-20–40 px
->40 px
-```
-
-and by occlusion duration:
-
-```text
-1–3 frames
-4–7 frames
-8–15 frames
->15 frames
-```
-
-This would provide a more meaningful evaluation of the actual problem than reporting a single overall metric.
-
----
-
-# 40. Summary
+# 33. Summary
 
 The final system consists of:
 
@@ -1267,40 +1104,4 @@ The key design decisions were made specifically for the characteristics of the p
 The next major improvement would therefore be a **lightweight detector specifically optimized for sub-20-pixel two-wheelers**, combined with camera-motion compensation and stronger long-term track recovery.
 
 ---
-
-# 41. Final Deliverables
-
-This repository contains the requested components:
-
-### Source Code
-
-```text
-run_pipeline.py
-detector_2w.py
-custom_tracker.py
-```
-
-### Input Video
-
-```text
-13105476_720p_10fps_35s.mp4
-```
-
-### Annotated Output
-
-```text
-final_result.mp4
-```
-
-### Environment
-
-```text
-requirements.txt
-```
-
-### Documentation
-
-```text
-README.md
-```
 > **Note:** This repository contains only the final working implementation used for the submission. Intermediate experiments, unsuccessful model versions, and development iterations are not included. The README documents the major experiments and design decisions that led to the final system.
