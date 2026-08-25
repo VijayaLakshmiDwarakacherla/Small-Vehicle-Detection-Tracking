@@ -1,0 +1,7 @@
+# YOLOv8 Custom Two-Wheeler Dataset Configuration
+path: 'C:/Users/dpava/Downloads/task1/custom_dataset/yolo_format'
+train: images/train
+val: images/val
+
+names:
+  0: two_wheeler

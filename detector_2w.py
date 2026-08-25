@@ -153,7 +153,7 @@ class SmallVehicleDetector:
     """
     Baseline Detector specialized for small two-wheelers using YOLOv8.
     """
-    def __init__(self, model_weights="yolov8n.pt", conf_thresh=0.15, iou_thresh=0.45, target_classes=[1, 3]):
+    def __init__(self, model_weights="models/yolov8n.pt", conf_thresh=0.15, iou_thresh=0.45, target_classes=[1, 3]):
         self.conf_thresh = conf_thresh
         self.iou_thresh = iou_thresh
         self.target_classes = target_classes
@@ -199,7 +199,7 @@ class TiledYOLOP2Detector:
     - Maps Class 0 (Person/Rider) in far zone (h/w >= 1.0) to Class 3 (Motorcycle)
     - Ultra-low confidence threshold (conf=0.015)
     """
-    def __init__(self, model_weights="yolov8m.pt", conf_thresh=0.05, iou_thresh=0.45,
+    def __init__(self, model_weights="models/yolov8m.pt", conf_thresh=0.05, iou_thresh=0.45,
                  roi_ymin=0.03, target_classes=[0, 1, 3]):
         self.conf_thresh = conf_thresh
         self.iou_thresh = iou_thresh
@@ -355,10 +355,8 @@ def get_detector(detector_type="lcnet", weights=None, conf_thresh=0.05):
         w = weights if weights else "lcnet_2w_best.pt"
         return LCNet2WDetector(model_weights=w, conf_thresh=conf_thresh)
     elif dtype in ["p2_tiling", "tiled_yolo", "p2", "tiling", "yolo_p2"]:
-        w = weights if weights else "yolov8m.pt"
+        w = weights if weights else "models/yolov8m.pt"
         return TiledYOLOP2Detector(model_weights=w, conf_thresh=conf_thresh, iou_thresh=0.45, roi_ymin=0.03)
     else:
-        w = weights if weights else "yolov8m.pt"
+        w = weights if weights else "models/yolov8m.pt"
         return SmallVehicleDetector(model_weights=w, conf_thresh=conf_thresh)
-
-
