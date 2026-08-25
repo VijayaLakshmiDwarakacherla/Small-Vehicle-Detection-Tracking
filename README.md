@@ -798,7 +798,7 @@ The current custom AMT tracker is lightweight, while the detector is the main co
 
 ---
 
-# 29. Proposed Custom Ultra-Small Vehicle Detector
+# 25. Proposed Custom Ultra-Small Vehicle Detector
 
 The most important improvement would be a dedicated detector designed specifically for 5–20 pixel two-wheelers.
 
@@ -832,7 +832,7 @@ The goal would be to preserve the high recall of the current tiled detector whil
 
 ---
 
-# 25. Sparse ROI Proposal
+# 26. Sparse ROI Proposal
 
 A first-stage lightweight process could identify regions where a moving vehicle is
 likely to exist using motion, appearance, and temporal consistency.
@@ -864,7 +864,7 @@ The overlapping strategy would reduce boundary-related detection failures.
 
 ---
 
-# 26. Lightweight Backbone
+# 27. Lightweight Backbone
 
 For the dedicated detector, I would investigate:
 
@@ -879,7 +879,7 @@ The goal would be to reduce the computational cost compared with YOLOv8m while p
 
 ---
 
-# 27. Temporal Information for Detection
+# 28. Temporal Information for Detection
 
 Another improvement would be to exploit the fact that this is video rather than independent images.
 
@@ -909,7 +909,7 @@ A lightweight recurrent or exponential feature memory could improve detection st
 
 ---
 
-# 28. Synthetic Small-Object Augmentation
+# 29. Synthetic Small-Object Augmentation
 
 The custom dataset could also be expanded using realistic degradation.
 
@@ -938,7 +938,7 @@ This would specifically train the detector for the conditions under which the sm
 
 ---
 
-# 20. Hard-Negative Mining
+# 30. Hard-Negative Mining
 
 I would also collect difficult non-vehicle patches such as:
 
@@ -957,7 +957,7 @@ These would be used as hard negatives so the detector learns that not every tiny
 
 ---
 
-# 30. Camera Motion Compensation
+# 31. Camera Motion Compensation
 
 Before object-level tracking, I would estimate global camera motion using stable background features.
 
@@ -985,7 +985,7 @@ It would also make the moving-versus-stationary decision more reliable.
 
 ---
 
-# 31. Improved Re-Identification
+# 32. Improved Re-Identification
 
 For long occlusions, I would add a lightweight appearance representation.
 
@@ -1014,7 +1014,7 @@ For this reason, appearance would be used as a supporting signal rather than the
 
 ---
 
-# 32. Improved Track Lifecycle
+# 33. Improved Track Lifecycle
 
 The current lifecycle uses a fixed 8-frame missed-detection threshold.
 
@@ -1047,7 +1047,7 @@ This would reduce unnecessary track termination while avoiding stale tracks.
 
 ---
 
-# 33. Summary
+# 34. Summary
 
 The final system consists of:
 
